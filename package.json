@@ -1,6 +1,6 @@
 {
   "name": "dequest",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "main": "lib/index.js",
   "author": "Trung Dinh Quang <trungdq88@gmail.com>",
   "license": "MIT",
