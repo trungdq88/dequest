@@ -1,0 +1,23 @@
+{
+  "name": "dequest",
+  "version": "1.0.0",
+  "main": "lib/index.js",
+  "author": "Trung Dinh Quang <trungdq88@gmail.com>",
+  "license": "MIT",
+  "private": false,
+  "scripts": {
+    "test": "jest src/*",
+    "build": "BABEL_ENV=production babel src -d lib"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-react-app": "^3.1.1",
+    "jest": "^22.4.3",
+    "redux": "^4.0.0"
+  },
+  "dependencies": {
+    "@trungdq88/promise-timeout": "^1.0.2",
+    "promise-dedupe": "^1.0.2",
+    "reselect": "^3.0.1"
+  }
+}
