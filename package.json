@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@trungdq88/promise-timeout": "^1.0.2",
-    "promise-dedupe": "^1.0.2",
+    "promise-dedupe": "^1.0.3",
     "reselect": "^3.0.1"
   }
 }

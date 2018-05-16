@@ -3001,9 +3001,9 @@ process-nextick-args@~2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/process-nextick-args/-/process-nextick-args-2.0.0.tgz#a37d732f4271b4ab1ad070d35508e8290788ffaa"
 
-promise-dedupe@^1.0.2:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/promise-dedupe/-/promise-dedupe-1.0.2.tgz#4148e3c01ef2dbcdac28f24056ce8a18bc3f83dc"
+promise-dedupe@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/promise-dedupe/-/promise-dedupe-1.0.3.tgz#f21c4c5f22979fcec870f07cf55088160642bd15"
 
 pseudomap@^1.0.2:
   version "1.0.2"
