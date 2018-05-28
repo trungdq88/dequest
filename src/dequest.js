@@ -68,6 +68,7 @@ export const defaultReducer = {
           [action.requestId]: {
             ...state[action.requestId],
             isUpdating: true,
+            exception: null,
             requestAt: action.requestAt,
             responseAt: null,
           },
@@ -96,10 +97,9 @@ const resolveRequest = async (api, action) => {
   return action.request;
 };
 
-export const createMiddleware = ({
-  requestTransformer = _ => Promise.resolve(_),
-  api,
-} = {}) => store => next => action => {
+export const createMiddleware = (
+  { requestTransformer = _ => Promise.resolve(_), api } = {},
+) => store => next => action => {
   if (!(action instanceof Dequest)) {
     return next(action);
   }
