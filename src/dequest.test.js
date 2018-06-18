@@ -3,6 +3,7 @@ import dequest, {
   invalidateRequest,
   $selectResponse,
   get,
+  bodyResolver,
 } from './dequest.js';
 import { createStore, compose, applyMiddleware, combineReducers } from 'redux';
 
@@ -166,6 +167,21 @@ describe('dequest', () => {
           jsonBody: { data: 10 },
         }),
       });
+    });
+  });
+
+  describe('resolvers', () => {
+    it('bodyResolver', () => {
+      expect(
+        bodyResolver({
+          isUpdating: false,
+          isLoading: false,
+          status: 200,
+          statusText: 'OK',
+          ok: true,
+          jsonBody: { data: 10 },
+        }),
+      ).toEqual({ data: 10 });
     });
   });
 });
