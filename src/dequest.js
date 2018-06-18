@@ -147,73 +147,44 @@ export const createMiddleware = (
 
 export const defaultMiddleware = createMiddleware();
 
+export const isStartedResolver = response => !!response;
+export const bodyResolver = response => response && response.jsonBody;
+export const isLoadingResolver = (isStarted, response) =>
+  isStarted && response.isLoading === true;
+export const isUpdatingResolver = response =>
+  response && response.isUpdating === true;
+export const isSuccessResolver = response => response && response.ok;
+export const isErrorResolver = (isLoading, response) =>
+  !isLoading && response && (response.ok === false || !!response.exception);
+export const errorResolver = response =>
+  response && (response.jsonBody || response.exception);
+export const exceptionResolver = response => response && response.exception;
+export const isFinishedResolver = response =>
+  response && response.ok !== undefined;
+export const requestAtResolver = response => response && response.requestAt;
+export const responseAtResolver = response => response && response.responseAt;
+export const requestDurationResolver = (requestAt, responseAt) =>
+  !!requestAt && !!responseAt ? responseAt - requestAt : null;
+export const statusCodeResolver = response => response && response.status;
+
 export const createResponseSelectors = $response => {
-  const $isStarted = createSelector($response, response => !!response);
-
-  const $isLoading = createSelector(
-    $isStarted,
-    $response,
-    (isStarted, response) => isStarted && response.isLoading === true,
-  );
-
-  const $isUpdating = createSelector(
-    $response,
-    response => response && response.isUpdating === true,
-  );
-
-  const $isSuccess = createSelector(
-    $response,
-    response => response && response.ok,
-  );
-
-  const $isError = createSelector(
-    $isLoading,
-    $response,
-    (isLoading, response) =>
-      !isLoading && response && (response.ok === false || !!response.exception),
-  );
-
-  const $body = createSelector(
-    $response,
-    response => response && response.jsonBody,
-  );
-
-  const $error = createSelector(
-    $response,
-    response => response && (response.jsonBody || response.exception),
-  );
-
-  const $exception = createSelector(
-    $response,
-    response => response && response.exception,
-  );
-
-  const $isFinished = createSelector(
-    $response,
-    response => response && response.ok !== undefined,
-  );
-
-  const $requestAt = createSelector(
-    $response,
-    response => response && response.requestAt,
-  );
-
-  const $responseAt = createSelector(
-    $response,
-    response => response && response.responseAt,
-  );
-
+  const $isStarted = createSelector($response, isStartedResolver);
+  const $isLoading = createSelector($isStarted, $response, isLoadingResolver);
+  const $isUpdating = createSelector($response, isUpdatingResolver);
+  const $isSuccess = createSelector($response, isSuccessResolver);
+  const $isError = createSelector($isLoading, $response, isErrorResolver);
+  const $body = createSelector($response, bodyResolver);
+  const $error = createSelector($response, errorResolver);
+  const $exception = createSelector($response, exceptionResolver);
+  const $isFinished = createSelector($response, isFinishedResolver);
+  const $requestAt = createSelector($response, requestAtResolver);
+  const $responseAt = createSelector($response, responseAtResolver);
   const $requestDuration = createSelector(
     $requestAt,
     $responseAt,
-    (requestAt, responseAt) =>
-      !!requestAt && !!responseAt ? responseAt - requestAt : null,
+    requestDurationResolver,
   );
-
-  const $statusCode = createSelector(
-    $response,
-    response => response && response.status,
-  );
+  const $statusCode = createSelector($response, statusCodeResolver);
 
   return {
     $isStarted,
