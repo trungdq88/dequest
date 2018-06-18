@@ -217,6 +217,11 @@ export const createResponseSelectorsByKey = key => {
   return selectors;
 };
 
+export const isDequestReceiveAction = object =>
+  typeof object === 'object' &&
+  object.type &&
+  object.type === '@@DEQUEST/RECEIVE';
+
 export default {
   reducer: defaultReducer,
   middleware: defaultMiddleware,

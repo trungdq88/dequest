@@ -4,6 +4,7 @@ import dequest, {
   $selectResponse,
   get,
   bodyResolver,
+  isDequestReceiveAction,
 } from './dequest.js';
 import { createStore, compose, applyMiddleware, combineReducers } from 'redux';
 
@@ -182,6 +183,16 @@ describe('dequest', () => {
           jsonBody: { data: 10 },
         }),
       ).toEqual({ data: 10 });
+    });
+  });
+
+  describe('utils', () => {
+    it('isDequestReceiveAction', () => {
+      expect(
+        isDequestReceiveAction({
+          type: '@@DEQUEST/RECEIVE',
+        }),
+      ).toBe(true);
     });
   });
 });
