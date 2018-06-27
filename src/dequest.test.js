@@ -195,4 +195,82 @@ describe('dequest', () => {
       ).toBe(true);
     });
   });
+
+  describe('requestTransformer', () => {
+    it('should transform if requestTransformer', async () => {
+      const transformedResponse = new Response({
+        status: 200,
+        statusText: 'OK',
+        ok: true,
+        jsonBody: { transformed: Math.random() },
+      });
+      store = createStore(
+        combineReducers({
+          ...dequest.reducer,
+        }),
+        compose(
+          applyMiddleware(
+            dequest.createMiddleware({
+              requestTransformer: _ => Promise.resolve(transformedResponse),
+            }),
+          ),
+        ),
+      );
+      const request = store.dispatch(
+        makeRequest('123', Promise.resolve(mockResponse)),
+      );
+      expect(store.getState()).toEqual({
+        '@@dequest': { '123': expect.objectContaining({ isLoading: true }) },
+      });
+      await request;
+      expect(store.getState()).toEqual({
+        '@@dequest': {
+          '123': expect.objectContaining({
+            isUpdating: false,
+            isLoading: false,
+            ...transformedResponse.serialize(),
+          }),
+        },
+      });
+    });
+
+    it('skipTransform', async () => {
+      const transformedResponse = new Response({
+        status: 200,
+        statusText: 'OK',
+        ok: true,
+        jsonBody: { transformed: Math.random() },
+      });
+      store = createStore(
+        combineReducers({
+          ...dequest.reducer,
+        }),
+        compose(
+          applyMiddleware(
+            dequest.createMiddleware({
+              requestTransformer: _ => Promise.resolve(transformedResponse),
+            }),
+          ),
+        ),
+      );
+      const request = store.dispatch(
+        makeRequest('123', Promise.resolve(mockResponse), {
+          skipTransform: true,
+        }),
+      );
+      expect(store.getState()).toEqual({
+        '@@dequest': { '123': expect.objectContaining({ isLoading: true }) },
+      });
+      await request;
+      expect(store.getState()).toEqual({
+        '@@dequest': {
+          '123': expect.objectContaining({
+            isUpdating: false,
+            isLoading: false,
+            ...mockResponse.serialize(),
+          }),
+        },
+      });
+    });
+  });
 });

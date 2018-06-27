@@ -6,9 +6,10 @@ const REDUCER_NAMESPACE = '@@dequest';
 const DEFAULT_TIMEOUT = 10000; // 10 secs
 
 class Dequest {
-  constructor(requestId, request) {
+  constructor(requestId, request, { skipTransform } = {}) {
     this.requestId = requestId;
     this.request = request;
+    this.options = { skipTransform };
   }
 }
 
@@ -25,8 +26,12 @@ export const put = (...args) => new HandledRequest({ type: 'put', args });
 export const Delete = (...args) => new HandledRequest({ type: 'delete', args }); // damn, delete is reserved
 export const patch = (...args) => new HandledRequest({ type: 'patch', args });
 
-export const makeRequest = (requestId, request) => {
-  return new Dequest(requestId, request);
+export const makeRequest = (
+  requestId,
+  request,
+  { skipTransform = false } = {},
+) => {
+  return new Dequest(requestId, request, { skipTransform });
 };
 
 export const invalidateRequest = requestId => ({
@@ -97,8 +102,10 @@ const resolveRequest = async (api, action) => {
   return action.request;
 };
 
+const noOpTransformer = _ => Promise.resolve(_);
+
 export const createMiddleware = (
-  { requestTransformer = _ => Promise.resolve(_), api } = {},
+  { requestTransformer = noOpTransformer, api } = {},
 ) => store => next => action => {
   if (!(action instanceof Dequest)) {
     return next(action);
@@ -120,7 +127,11 @@ export const createMiddleware = (
     });
   }
 
-  return requestTransformer(
+  const transform = action.options.skipTransform
+    ? noOpTransformer
+    : requestTransformer;
+
+  return transform(
     dedupe(
       action.requestId,
       timeout(resolveRequest(api, action), DEFAULT_TIMEOUT, {
