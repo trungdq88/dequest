@@ -167,8 +167,8 @@ export const isUpdatingResolver = response =>
 export const isSuccessResolver = response => response && response.ok;
 export const isErrorResolver = (isLoading, response) =>
   !isLoading && response && (response.ok === false || !!response.exception);
-export const errorResolver = response =>
-  response && (response.jsonBody || response.exception);
+export const errorResolver = (response, isError) =>
+  response && isError && (response.jsonBody || response.exception);
 export const exceptionResolver = response => response && response.exception;
 export const isFinishedResolver = response =>
   response && response.ok !== undefined;
@@ -185,7 +185,7 @@ export const createResponseSelectors = $response => {
   const $isSuccess = createSelector($response, isSuccessResolver);
   const $isError = createSelector($isLoading, $response, isErrorResolver);
   const $body = createSelector($response, bodyResolver);
-  const $error = createSelector($response, errorResolver);
+  const $error = createSelector($response, $isError, errorResolver);
   const $exception = createSelector($response, exceptionResolver);
   const $isFinished = createSelector($response, isFinishedResolver);
   const $requestAt = createSelector($response, requestAtResolver);
