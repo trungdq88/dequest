@@ -6,10 +6,10 @@ const REDUCER_NAMESPACE = '@@dequest';
 const DEFAULT_TIMEOUT = 10000; // 10 secs
 
 class Dequest {
-  constructor(requestId, request, { skipTransform } = {}) {
+  constructor(requestId, request, { overrideTransform } = {}) {
     this.requestId = requestId;
     this.request = request;
-    this.options = { skipTransform };
+    this.options = { overrideTransform };
   }
 }
 
@@ -29,9 +29,9 @@ export const patch = (...args) => new HandledRequest({ type: 'patch', args });
 export const makeRequest = (
   requestId,
   request,
-  { skipTransform = false } = {},
+  { overrideTransform = false } = {},
 ) => {
-  return new Dequest(requestId, request, { skipTransform });
+  return new Dequest(requestId, request, { overrideTransform });
 };
 
 export const invalidateRequest = requestId => ({
@@ -127,8 +127,8 @@ export const createMiddleware = (
     });
   }
 
-  const transform = action.options.skipTransform
-    ? noOpTransformer
+  const transform = action.options.overrideTransform
+    ? action.options.overrideTransform
     : requestTransformer;
 
   return transform(

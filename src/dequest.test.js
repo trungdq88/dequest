@@ -234,7 +234,7 @@ describe('dequest', () => {
       });
     });
 
-    it('skipTransform', async () => {
+    it('overrideTransform', async () => {
       const transformedResponse = new Response({
         status: 200,
         statusText: 'OK',
@@ -245,17 +245,11 @@ describe('dequest', () => {
         combineReducers({
           ...dequest.reducer,
         }),
-        compose(
-          applyMiddleware(
-            dequest.createMiddleware({
-              requestTransformer: _ => Promise.resolve(transformedResponse),
-            }),
-          ),
-        ),
+        compose(applyMiddleware(dequest.createMiddleware())),
       );
       const request = store.dispatch(
         makeRequest('123', Promise.resolve(mockResponse), {
-          skipTransform: true,
+          overrideTransform: _ => Promise.resolve(transformedResponse),
         }),
       );
       expect(store.getState()).toEqual({
@@ -267,7 +261,7 @@ describe('dequest', () => {
           '123': expect.objectContaining({
             isUpdating: false,
             isLoading: false,
-            ...mockResponse.serialize(),
+            ...transformedResponse.serialize(),
           }),
         },
       });
