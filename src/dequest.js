@@ -99,7 +99,7 @@ const resolveRequest = async (api, action) => {
     if (!method) {
       throw new Error(`Dequest: method ${type} not registered in custom api`);
     }
-    return method(...action.request.args);
+    return method(action.request.args, action);
   }
   return action.request;
 };
