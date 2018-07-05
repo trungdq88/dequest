@@ -2,8 +2,10 @@ import { createSelector } from 'reselect';
 import dedupe from 'promise-dedupe';
 import timeout from '@trungdq88/promise-timeout';
 
-const REDUCER_NAMESPACE = '@@dequest';
-const DEFAULT_TIMEOUT = 10000; // 10 secs
+export const configs = {
+  REDUCER_NAMESPACE: '@@dequest',
+  DEFAULT_TIMEOUT: 10000, // 10 secs
+};
 
 class Dequest {
   constructor(requestId, request, { overrideTransform } = {}) {
@@ -41,11 +43,11 @@ export const invalidateRequest = requestId => ({
 
 export const $selectResponse = createSelector(
   state => state,
-  state => state[REDUCER_NAMESPACE],
+  state => state[configs.REDUCER_NAMESPACE],
 );
 
 export const defaultReducer = {
-  [REDUCER_NAMESPACE]: (state = {}, action) => {
+  [configs.REDUCER_NAMESPACE]: (state = {}, action) => {
     switch (action.type) {
       case '@@DEQUEST/SEND':
         return {
@@ -134,7 +136,7 @@ export const createMiddleware = (
   return transform(
     dedupe(
       action.requestId,
-      timeout(resolveRequest(api, action), DEFAULT_TIMEOUT, {
+      timeout(resolveRequest(api, action), configs.DEFAULT_TIMEOUT, {
         errorMessage: 'Connection timeout',
       }),
     ),
