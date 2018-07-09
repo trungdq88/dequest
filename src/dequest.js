@@ -1,10 +1,8 @@
 import { createSelector } from 'reselect';
 import dedupe from 'promise-dedupe';
-import timeout from '@trungdq88/promise-timeout';
 
 export const configs = {
   REDUCER_NAMESPACE: '@@dequest',
-  DEFAULT_TIMEOUT: 10000, // 10 secs
 };
 
 class Dequest {
@@ -133,14 +131,7 @@ export const createMiddleware = (
     ? action.options.overrideTransform
     : requestTransformer;
 
-  return transform(
-    dedupe(
-      action.requestId,
-      timeout(resolveRequest(api, action), configs.DEFAULT_TIMEOUT, {
-        errorMessage: 'Connection timeout',
-      }),
-    ),
-  )
+  return transform(dedupe(action.requestId, resolveRequest(api, action)))
     .then(r =>
       store.dispatch({
         type: '@@DEQUEST/RECEIVE',

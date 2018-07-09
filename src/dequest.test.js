@@ -132,14 +132,17 @@ describe('dequest', () => {
       const fakeRequest = Math.random();
       const fakeParams = Math.random();
       store.dispatch(makeRequest('test', get(fakeRequest, fakeParams)));
-      expect(mockGet).toHaveBeenCalledWith(fakeRequest, fakeParams);
+      expect(mockGet.mock.calls[0][0].request.args).toEqual([
+        fakeRequest,
+        fakeParams,
+      ]);
     });
   });
 
   describe('race condition', () => {
     it('should works', async () => {
       const store = createStoreWithMockApi({
-        get: time =>
+        get: action =>
           new Promise(resolve =>
             setTimeout(
               () =>
@@ -148,10 +151,10 @@ describe('dequest', () => {
                     status: 200,
                     statusText: 'OK',
                     ok: true,
-                    jsonBody: { data: time },
+                    jsonBody: { data: action.request.args[0] },
                   }),
                 ),
-              time,
+              action.request.args[0], // time,
             ),
           ),
       });
