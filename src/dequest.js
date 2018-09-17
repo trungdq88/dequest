@@ -6,10 +6,10 @@ export const configs = {
 };
 
 class Dequest {
-  constructor(requestId, request, { overrideTransform } = {}) {
+  constructor(requestId, request, { overrideTransform, apiEntry } = {}) {
     this.requestId = requestId;
     this.request = request;
-    this.options = { overrideTransform };
+    this.options = { overrideTransform, apiEntry };
   }
 }
 
@@ -29,9 +29,9 @@ export const patch = (...args) => new HandledRequest({ type: 'patch', args });
 export const makeRequest = (
   requestId,
   request,
-  { overrideTransform = false } = {},
+  { overrideTransform = false, apiEntry } = {},
 ) => {
-  return new Dequest(requestId, request, { overrideTransform });
+  return new Dequest(requestId, request, { overrideTransform, apiEntry });
 };
 
 export const invalidateRequest = requestId => ({
@@ -104,8 +104,32 @@ const resolveRequest = async (api, action) => {
 
 const noOpTransformer = _ => Promise.resolve(_);
 
+const resolveApiEntry = ({ api, apis, entry }) => {
+  if (!api && !apis) {
+    return undefined;
+  }
+
+  if (api && apis) {
+    throw new Error('`api` and `apis` could not be both defined');
+  }
+
+  if (api) return api;
+
+  if (!entry) {
+    throw new Error(
+      'Dequest: `apis` defined in middleware but `apiEntry` not found in action',
+    );
+  }
+
+  if (!apis[entry]) {
+    throw new Error(`Entry ${entry} not found in 'apis'`);
+  }
+
+  return apis[entry];
+};
+
 export const createMiddleware = (
-  { requestTransformer = noOpTransformer, api } = {},
+  { requestTransformer = noOpTransformer, api, apis } = {},
 ) => store => next => action => {
   if (!(action instanceof Dequest)) {
     return next(action);
@@ -131,7 +155,13 @@ export const createMiddleware = (
     ? action.options.overrideTransform
     : requestTransformer;
 
-  return transform(dedupe(action.requestId, resolveRequest(api, action)))
+  const apiEntry = resolveApiEntry({
+    api,
+    apis,
+    entry: action.options.apiEntry,
+  });
+
+  return transform(dedupe(action.requestId, resolveRequest(apiEntry, action)))
     .then(r =>
       store.dispatch({
         type: '@@DEQUEST/RECEIVE',

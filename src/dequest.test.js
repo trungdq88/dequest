@@ -22,25 +22,22 @@ global.Response = class Response {
 
 describe('dequest', () => {
   let store;
-  const mockResponse = new Response({
-    status: 200,
-    statusText: 'OK',
-    ok: true,
-    jsonBody: { something: 'here' },
-  });
+  const createMockResponse = jsonBody =>
+    new Response({
+      status: 200,
+      statusText: 'OK',
+      ok: true,
+      jsonBody,
+    });
 
-  const createStoreWithMockApi = api =>
+  const mockResponse = createMockResponse({ something: 'here' });
+
+  const createStoreWithMidleware = middlewareParams =>
     (store = createStore(
       combineReducers({
         ...dequest.reducer,
       }),
-      compose(
-        applyMiddleware(
-          dequest.createMiddleware({
-            api,
-          }),
-        ),
-      ),
+      compose(applyMiddleware(dequest.createMiddleware(middlewareParams))),
     ));
 
   beforeEach(() => {
@@ -128,7 +125,7 @@ describe('dequest', () => {
   describe('custom api', () => {
     it('should give get params to api', () => {
       const mockGet = jest.fn().mockImplementation(() => mockResponse);
-      const store = createStoreWithMockApi({ get: mockGet });
+      const store = createStoreWithMidleware({ api: { get: mockGet } });
       const fakeRequest = Math.random();
       const fakeParams = Math.random();
       store.dispatch(makeRequest('test', get(fakeRequest, fakeParams)));
@@ -137,26 +134,62 @@ describe('dequest', () => {
         fakeParams,
       ]);
     });
+
+    it('should allows multiple api entries', async () => {
+      const createMockGet = res =>
+        jest.fn().mockImplementation(() => createMockResponse(res));
+      const mockGet1 = createMockGet({ a: 1 });
+      const mockGet2 = createMockGet({ b: 2 });
+      const store = createStoreWithMidleware({
+        apis: {
+          entry1: { get: mockGet1 },
+          entry2: { get: mockGet2 },
+        },
+      });
+
+      const requestToApi1 = store.dispatch(
+        makeRequest('test1', get('http://111111', '11'), {
+          apiEntry: 'entry1',
+        }),
+      );
+      const requestToApi2 = store.dispatch(
+        makeRequest('test2', get('http://222222222', '22'), {
+          apiEntry: 'entry2',
+        }),
+      );
+      expect(mockGet1.mock.calls.length).toBe(1);
+      expect(mockGet1.mock.calls[0][0].request.args).toEqual([
+        'http://111111',
+        '11',
+      ]);
+      expect(mockGet2.mock.calls.length).toEqual(1);
+      expect(mockGet2.mock.calls[0][0].request.args).toEqual([
+        'http://222222222',
+        '22',
+      ]);
+    });
   });
 
   describe('race condition', () => {
     it('should works', async () => {
-      const store = createStoreWithMockApi({
-        get: action =>
-          new Promise(resolve =>
-            setTimeout(
-              () =>
-                resolve(
-                  new Response({
-                    status: 200,
-                    statusText: 'OK',
-                    ok: true,
-                    jsonBody: { data: action.request.args[0] },
-                  }),
-                ),
-              action.request.args[0], // time,
+      const store = createStoreWithMidleware({
+        api: {
+          get: action =>
+            new Promise(resolve =>
+              setTimeout(
+                () =>
+                  resolve(
+                    new Response({
+                      status: 200,
+                      statusText: 'OK',
+                      ok: true,
+                      jsonBody: { data: action.request.args[0] },
+                    }),
+                  ),
+                action.request.args[0], // time,
+              ),
             ),
-          ),
+        },
       });
       const request1 = store.dispatch(makeRequest('testId', get(300)));
       const request2 = store.dispatch(makeRequest('testId', get(10)));
